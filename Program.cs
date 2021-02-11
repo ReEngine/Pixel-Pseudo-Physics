@@ -280,19 +280,6 @@ namespace SFMLTryout
         {
             TestCounter++;
             if (TestCounter > _Width - 1) { TestCounter = 0; }
-            //RESET THE BUFFER (COULD BE REMOVED LATER I GUESS)
-            //for (int x = 0; x < _Width; x++)
-            //{
-            //    for (int y = 0; y < _Height; y++)
-            //    {
-            //        ScreenBuffer[x, y] = Color.Black;
-            //    }
-            //}
-
-            //DO STUFF
-
-            //WRITING THE BUFFER INTO THE IMAGE
-            //THIS SHOULD ALWAYS BE THE LAST STEP OF THE UPDATE METHOD
 
             for (int x = 0; x < _Width; x++)
             {
