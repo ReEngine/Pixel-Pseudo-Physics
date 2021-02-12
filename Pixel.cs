@@ -10,9 +10,9 @@ namespace SFMLTryout
     class Pixel
     {
         public Color color;
-
+        Vector2i position;
         public Material Material;
-        public Pixel(Material material)
+        public Pixel(Material material, int x, int y)
         {
             this.Material = material;
             Random rnd = new Random();
@@ -25,8 +25,14 @@ namespace SFMLTryout
                 this.color = Color.Magenta;
             if (this.Material == Material.Air)
                 this.color = Color.Black;
+            this.position = new Vector2i(x, y);
         }
-        Vector2i position;
+
+        void GetColor()
+        {
+
+        }
+
         public void Update()
         {
             if (this.Material == Material.Sand)
@@ -39,7 +45,7 @@ namespace SFMLTryout
             if (this.Material == Material.Generator)
             {
                 if (Down(Material.Air) & Program.placing)
-                    PlaceDown(Program.mP);
+                    PlaceDown(new Pixel(Program.mP, this.position.X, this.position.Y));
             }
         }
 
@@ -52,8 +58,10 @@ namespace SFMLTryout
         }
         bool Down(Material material)
         {
-            if (Program.field[this.position.X, this.position.Y + 1].Material == material)
-                return true;
+            if (this.position.Y + 2 < Program._Height)
+                if (Program.field[this.position.X, this.position.Y + 1].Material == material)
+                    return true;
+                else return false;
             else return false;
         }
         bool Left(Material material)
@@ -108,9 +116,8 @@ namespace SFMLTryout
         }
         void MoveDown()
         {
-
             Program.field[this.position.X, this.position.Y + 1] = this;
-            Program.field[this.position.X, this.position.Y].Material = Material.Air;
+            Program.field[this.position.X, this.position.Y] = new Pixel(Material.Air, this.position.X, this.position.Y);
         }
         void MoveLeft()
         {
@@ -153,7 +160,7 @@ namespace SFMLTryout
         }
         void PlaceDown(Pixel pixel)
         {
-            Program.field[this.position.X, this.position.Y + 1] = this;
+            Program.field[this.position.X, this.position.Y + 1] = new Pixel(Material.Sand, this.position.X, this.position.Y + 1);
         }
         void PlaceLeft(Pixel pixel)
         {

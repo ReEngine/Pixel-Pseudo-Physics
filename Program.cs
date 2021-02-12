@@ -15,14 +15,14 @@ namespace SFMLTryout
         //const int _Width = 640;
         //const int _Height = 480;
 
-        const int _SWidth = 2560;
-        const int _SHeight = 1440;
+        const int _SWidth = 1920;
+        const int _SHeight = 1080;
 
         const int _ResMult = 1;
 
 
-        const int _Width = 256 * _ResMult;
-        const int _Height = 144 * _ResMult;
+        public const int _Width = 192 * _ResMult;
+        public const int _Height = 108 * _ResMult;
         Random rnd = new Random();
 
         public static Vector2i position;
@@ -44,15 +44,15 @@ namespace SFMLTryout
 
         public static double mult = 0;
 
-        public static Pixel mP;
+        public static Material mP = Material.Sand;
         public static string mPS;
 
-        
-        
+
+
 
         static void Main(string[] args)
         {
-            Text text = new Text();
+            //Text text = new Text();
 
             mult = _SWidth / _Width;
             RenderWindow window = new RenderWindow(new SFML.Window.VideoMode(_Width, _Height), "Test");
@@ -62,7 +62,7 @@ namespace SFMLTryout
             {
                 for (int x = 0; x < _Width; x++)
                 {
-                    field[x, y] = new Pixel(Material.Air);
+                    field[x, y] = new Pixel(Material.Air, x, y);
                     fireField[x, y] = 0;
                 }
             }
@@ -70,7 +70,7 @@ namespace SFMLTryout
             prevPosX = 0;
             prevPosY = 0;
 
-            Font font = new Font(@"C:\Users\ameli\source\repos\Pixel-Pseudo-Physics\Resources\Fonts\Montserrat-Light.ttf");
+            //Font font = new Font(@"C:\Users\ameli\source\repos\Pixel-Pseudo-Physics\Resources\Fonts\Montserrat-Light.ttf");
             while (window.IsOpen)
             {
                 Update();
@@ -78,13 +78,13 @@ namespace SFMLTryout
                 window.Clear();
                 window.DispatchEvents();
 
-                text = new Text(mPS, font);
-                text.FillColor = Color.White;
-                text.CharacterSize = 8;
+                //text = new Text(mPS, font);
+                //text.FillColor = Color.White;
+                //text.CharacterSize = 8;
 
                 Sprite mainviewport = new Sprite(MainViewPort);
                 window.Draw(mainviewport);
-                window.Draw(text);
+                //window.Draw(text);
                 window.Display();
 
 
@@ -110,11 +110,11 @@ namespace SFMLTryout
                 if (Keyboard.IsKeyPressed(Keyboard.Key.F))
                     fire = !fire;
                 if (Keyboard.IsKeyPressed(Keyboard.Key.Num1))
-                    mP = new Pixel(Material.Sand);
+                    mP = Material.Sand;
                 if (Keyboard.IsKeyPressed(Keyboard.Key.Num2))
-                    mP = new Pixel(Material.Water);
+                    mP = Material.Water;
                 if (Keyboard.IsKeyPressed(Keyboard.Key.Num3))
-                    mP = new Pixel(Material.Gas);
+                    mP = Material.Gas;
                 if (Keyboard.IsKeyPressed(Keyboard.Key.Escape))
                     window.Close();
                 if (Keyboard.IsKeyPressed(Keyboard.Key.F5))
@@ -122,11 +122,11 @@ namespace SFMLTryout
                     {
                         for (int x = 0; x < _Width; x++)
                         {
-                            field[x, y] = new Pixel(Material.Air);
+                            field[x, y] = new Pixel(Material.Air, x, y);
                             fireField[x, y] = 0;
                         }
                     }
-                field[prevPosX, prevPosY] = new Pixel(Material.Air);
+                field[prevPosX, prevPosY] = new Pixel(Material.Air, prevPosX, prevPosY);
 
 
                 if (Mouse.GetPosition().X / mult < window.Size.X & Mouse.GetPosition().Y / mult < window.Size.Y)
@@ -134,16 +134,16 @@ namespace SFMLTryout
                     {
                         prevPosY = Mouse.GetPosition(window).Y / Convert.ToInt32(mult);
                         prevPosX = Mouse.GetPosition(window).X / Convert.ToInt32(mult);
-                        field[Mouse.GetPosition(window).X / Convert.ToInt32(mult), Mouse.GetPosition(window).Y / Convert.ToInt32(mult)] = new Pixel(Material.Generator);
+                        field[Mouse.GetPosition(window).X / Convert.ToInt32(mult), Mouse.GetPosition(window).Y / Convert.ToInt32(mult)] = new Pixel(Material.Generator, Mouse.GetPosition(window).X / Convert.ToInt32(mult), Mouse.GetPosition(window).Y / Convert.ToInt32(mult));
                     }
 
 
 
-                if (mP == new Pixel(Material.Sand))
+                if (mP == Material.Sand)
                     mPS = "Sand ";
-                if (mP == new Pixel(Material.Water))
+                if (mP == Material.Water)
                     mPS = "Water";
-                if (mP == new Pixel(Material.Gas))
+                if (mP == Material.Gas)
                     mPS = "Gas  ";
 
                 if (Mouse.GetPosition().X / mult < window.Size.X & Mouse.GetPosition().Y / mult < window.Size.Y)
@@ -171,7 +171,7 @@ namespace SFMLTryout
             {
                 for (int y = 0; y < _Height; y++)
                 {
-                    cpixels[x + (_Width * y)] = field[x,y].color;//make an intermediary array the correct dimention and arrange the pixels in the correct position to be drawn (separate step to keep everything clean, I find this operation incredibly confusing mainly because I had no idea how the pixels are supposed to be arrenged in the first place(still kind of dont))
+                    cpixels[x + (_Width * y)] = field[x, y].color;//make an intermediary array the correct dimention and arrange the pixels in the correct position to be drawn (separate step to keep everything clean, I find this operation incredibly confusing mainly because I had no idea how the pixels are supposed to be arrenged in the first place(still kind of dont))
                 }
             }
             for (int i = 0; i < _Width * _Height * 4; i += 4)//fill the byte array
