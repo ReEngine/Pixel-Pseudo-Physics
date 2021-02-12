@@ -15,13 +15,14 @@ namespace SFMLTryout
         //const int _Width = 640;
         //const int _Height = 480;
 
+        const int _SWidth = 2560;
+        const int _SHeight = 1440;
 
-        const int _SWidth = 1920;
-        const int _SHeight = 1080;
+        const int _ResMult = 1;
 
 
-        const int _Width = 640;
-        const int _Height = 360;
+        const int _Width = 256 * _ResMult;
+        const int _Height = 144 * _ResMult;
         Random rnd = new Random();
 
         public static Vector2i position;
@@ -42,11 +43,12 @@ namespace SFMLTryout
 
         public static double mult = 0;
 
-        public static Color mP;
-        //public static string mPS;
+        public static Color mP = Color.Yellow;
+        public static string mPS;
 
         static void Main(string[] args)
         {
+            Text text = new Text();
 
             mult = _SWidth / _Width;
             RenderWindow window = new RenderWindow(new SFML.Window.VideoMode(_Width, _Height), "Test");
@@ -64,7 +66,7 @@ namespace SFMLTryout
             prevPosX = 0;
             prevPosY = 0;
 
-            
+            Font font = new Font(@"C:\Users\ameli\source\repos\Pixel-Pseudo-Physics\Resources\Fonts\Montserrat-Light.ttf");
 
             while (window.IsOpen)
             {
@@ -73,10 +75,15 @@ namespace SFMLTryout
                 window.Clear();
                 window.DispatchEvents();
 
+                text = new Text(mPS, font);
+                text.FillColor = Color.White;
+                text.CharacterSize = 8;
+
                 Sprite mainviewport = new Sprite(MainViewPort);
                 window.Draw(mainviewport);
-
+                window.Draw(text);
                 window.Display();
+
 
                 position = new Vector2i(Mouse.GetPosition(window).X / Convert.ToInt32(mult), Mouse.GetPosition(window).Y / Convert.ToInt32(mult));
 
@@ -90,7 +97,8 @@ namespace SFMLTryout
                     placing = false;
 
                 if (Mouse.IsButtonPressed(Mouse.Button.Right))
-                    ScreenBuffer[Mouse.GetPosition(window).X / Convert.ToInt32(mult), Mouse.GetPosition(window).Y / Convert.ToInt32(mult)+1] = Color.Magenta;
+                    ScreenBuffer[Mouse.GetPosition(window).X / Convert.ToInt32(mult),
+                        Mouse.GetPosition(window).Y / Convert.ToInt32(mult) + 1] = Color.Magenta;
 
 
 
@@ -106,6 +114,15 @@ namespace SFMLTryout
                     mP = Color.Green;
                 if (Keyboard.IsKeyPressed(Keyboard.Key.Escape))
                     window.Close();
+                if (Keyboard.IsKeyPressed(Keyboard.Key.F5))
+                    for (int y = 0; y < _Height; y++)
+                    {
+                        for (int x = 0; x < _Width; x++)
+                        {
+                            ScreenBuffer[x, y] = Color.Black;
+                            fireField[x, y] = 0;
+                        }
+                    }
                 ScreenBuffer[prevPosX, prevPosY] = Color.Black;
 
 
@@ -119,12 +136,12 @@ namespace SFMLTryout
 
 
 
-                //if (mP == Color.Yellow)
-                //    mPS = "Sand ";
-                //if (mP == Color.Blue)
-                //    mPS = "Water";
-                //if (mP == Color.Green)
-                //    mPS = "Gas  ";
+                if (mP == Color.Yellow)
+                    mPS = "Sand ";
+                if (mP == Color.Blue)
+                    mPS = "Water";
+                if (mP == Color.Green)
+                    mPS = "Gas  ";
 
                 if (Mouse.GetPosition().X / mult < window.Size.X & Mouse.GetPosition().Y / mult < window.Size.Y)
                     if (Mouse.GetPosition(window).X > 0 & Mouse.GetPosition(window).Y > 0)
@@ -136,145 +153,9 @@ namespace SFMLTryout
 
         static void Draw()
         {
-            for (int y = _Height - 1; y > position.Y; y--)
-            {
-                drawLine(y);
-            }
-            for (int y = 0; y <= position.Y;y++)
-            {
-                drawLine(y);
-            }
-            Update();
+
         }
 
-        static void drawLine(int y)
-        {
-            for (int x = 0; x < _Width; x++)
-            {
-                if (ScreenBuffer[x, y] == Color.Magenta & placing)
-                    ScreenBuffer[x, y + 1] = mP;
-                if ((ScreenBuffer[x, y] == Color.Yellow) & (y + 1 < _Height) & (x + 1 < _Width) & (x - 1 >= 0))
-                {
-                    if ((ScreenBuffer[x, y + 1] == Color.Black) & (y + 1 < _Height))
-                    {
-                        ScreenBuffer[x, y + 1] = Color.Yellow;
-                        ScreenBuffer[x, y] = Color.Black;
-                    }
-                    else if ((ScreenBuffer[x - 1, y + 1] == Color.Black) & (y + 1 < _Height))
-                    {
-                        ScreenBuffer[x - 1, y + 1] = Color.Yellow;
-                        ScreenBuffer[x, y] = Color.Black;
-                    }
-                    else if ((ScreenBuffer[x + 1, y + 1] == Color.Black) & (y + 1 < _Height))
-                    {
-                        ScreenBuffer[x + 1, y + 1] = Color.Yellow;
-                        ScreenBuffer[x, y] = Color.Black;
-                    }
-                    else if ((ScreenBuffer[x, y + 1] == Color.Blue) & (y + 1 < _Height))
-                    {
-                        ScreenBuffer[x, y + 1] = Color.Yellow;
-                        ScreenBuffer[x, y] = Color.Blue;
-                    }
-                    else if ((ScreenBuffer[x - 1, y + 1] == Color.Blue) & (y + 1 < _Height))
-                    {
-                        ScreenBuffer[x - 1, y + 1] = Color.Yellow;
-                        ScreenBuffer[x, y] = Color.Blue;
-                    }
-                    else if ((ScreenBuffer[x + 1, y + 1] == Color.Blue) & (y + 1 < _Height))
-                    {
-                        ScreenBuffer[x + 1, y + 1] = Color.Yellow;
-                        ScreenBuffer[x, y] = Color.Blue;
-                    }
-                }
-                if ((ScreenBuffer[x, y] == Color.Blue) & (y + 1 < _Height) & (x + 1 < _Width) & (x - 1 >= 0))
-                {
-                    if ((ScreenBuffer[x, y + 1] == Color.Black) & (y + 1 < _Height))
-                    {
-                        ScreenBuffer[x, y + 1] = Color.Blue;
-                        ScreenBuffer[x, y] = Color.Black;
-                    }
-                    else if ((ScreenBuffer[x - 1, y + 1] == Color.Black))
-                    {
-                        ScreenBuffer[x - 1, y + 1] = Color.Blue;
-                        ScreenBuffer[x, y] = Color.Black;
-                    }
-                    else if ((ScreenBuffer[x + 1, y + 1] == Color.Black))
-                    {
-                        ScreenBuffer[x + 1, y + 1] = Color.Blue;
-                        ScreenBuffer[x, y] = Color.Black;
-                    }
-                    else if ((ScreenBuffer[x + 1, y] == Color.Black))
-                    {
-                        ScreenBuffer[x + 1, y] = Color.Blue;
-                        ScreenBuffer[x, y] = Color.Black;
-                    }
-                    else if ((ScreenBuffer[x - 1, y] == Color.Black))
-                    {
-                        ScreenBuffer[x - 1, y] = Color.Blue;
-                        ScreenBuffer[x, y] = Color.Black;
-                    }
-                }
-                if ((ScreenBuffer[x, y] == Color.Green) & (y - 1 < _Height) & (x + 1 < _Width) & (x - 1 >= 0)& (y - 1 >= 0))
-                {
-                    if ((ScreenBuffer[x, y - 1] == Color.Black) & (y - 1 < _Height))
-                    {
-                        ScreenBuffer[x, y - 1] = Color.Green;
-                        ScreenBuffer[x, y] = Color.Black;
-                    }
-                    else if ((ScreenBuffer[x - 1, y - 1] == Color.Black))
-                    {
-                        ScreenBuffer[x - 1, y - 1] = Color.Green;
-                        ScreenBuffer[x, y] = Color.Black;
-                    }
-                    else if ((ScreenBuffer[x + 1, y - 1] == Color.Black))
-                    {
-                        ScreenBuffer[x + 1, y - 1] = Color.Green;
-                        ScreenBuffer[x, y] = Color.Black;
-                    }
-                    else if ((ScreenBuffer[x + 1, y] == Color.Black))
-                    {
-                        ScreenBuffer[x + 1, y] = Color.Green;
-                        ScreenBuffer[x, y] = Color.Black;
-                    }
-                    else if ((ScreenBuffer[x - 1, y] == Color.Black))
-                    {
-                        ScreenBuffer[x - 1, y] = Color.Green;
-                        ScreenBuffer[x, y] = Color.Black;
-                    }
-                    if (ScreenBuffer[x, y] == Color.Green & ((ScreenBuffer[x - 1, y - 1] == Color.Red) | (ScreenBuffer[x, y - 1] == Color.Red) | (ScreenBuffer[x + 1, y - 1] == Color.Red) |
-                                              (ScreenBuffer[x - 1, y] == Color.Red) | (ScreenBuffer[x + 1, y] == Color.Red) |
-                                              (ScreenBuffer[x - 1, y + 1] == Color.Red) | (ScreenBuffer[x, y + 1] == Color.Red) | (ScreenBuffer[x + 1, y + 1] == Color.Red)))
-                    {
-                        ScreenBuffer[x, y] = Color.Red;
-                        fireField[x, y] = 100;
-                    }
-                    else if (ScreenBuffer[x, y] == Color.Green & (fire) & ((ScreenBuffer[x - 1, y - 1] == Color.Magenta) | (ScreenBuffer[x, y - 1] == Color.Magenta) | (ScreenBuffer[x + 1, y - 1] == Color.Magenta) |
-                                              (ScreenBuffer[x - 1, y] == Color.Magenta) | (ScreenBuffer[x + 1, y] == Color.Magenta) |
-                                              (ScreenBuffer[x - 1, y + 1] == Color.Magenta) | (ScreenBuffer[x, y + 1] == Color.Magenta) | (ScreenBuffer[x + 1, y + 1] == Color.Magenta)))
-                    {
-                        ScreenBuffer[x, y] = Color.Red;
-                        fireField[x, y] = 100;
-                    }
-                }
-
-
-
-
-                if (y + 1 < _Height)
-                    if ((ScreenBuffer[x, y + 1] == Color.Magenta) & voiding)
-                    {
-                        ScreenBuffer[x, y] = Color.Black;
-                    }
-                if (ScreenBuffer[x, y] == Color.Red)
-                {
-                    if (fireField[x, y] > 0)
-                        fireField[x, y]--;
-                    if (fireField[x, y] == 0)
-                        if (ScreenBuffer[x, y] == Color.Red)
-                            ScreenBuffer[x, y] = Color.Black;
-                }
-            }
-        }
 
         static void Update()
         {
