@@ -33,6 +33,7 @@ namespace SFMLTryout
         public static Color[] cpixels = new Color[_Width * _Height];//intermediary step to keep everything clear
 
         public static byte[,] fireField = new byte[_Width, _Height];
+        public static Pixel[,] field = new Pixel[_Width, _Height];
 
         public static int prevPosX;
         public static int prevPosY;
@@ -43,8 +44,11 @@ namespace SFMLTryout
 
         public static double mult = 0;
 
-        public static Color mP = Color.Yellow;
+        public static Pixel mP;
         public static string mPS;
+
+        
+        
 
         static void Main(string[] args)
         {
@@ -52,13 +56,13 @@ namespace SFMLTryout
 
             mult = _SWidth / _Width;
             RenderWindow window = new RenderWindow(new SFML.Window.VideoMode(_Width, _Height), "Test");
-            window.SetVerticalSyncEnabled(false);
+            window.SetVerticalSyncEnabled(true);
 
             for (int y = 0; y < _Height; y++)
             {
                 for (int x = 0; x < _Width; x++)
                 {
-                    ScreenBuffer[x, y] = Color.Black;
+                    field[x, y] = new Pixel(Material.Air);
                     fireField[x, y] = 0;
                 }
             }
@@ -67,7 +71,6 @@ namespace SFMLTryout
             prevPosY = 0;
 
             Font font = new Font(@"C:\Users\ameli\source\repos\Pixel-Pseudo-Physics\Resources\Fonts\Montserrat-Light.ttf");
-
             while (window.IsOpen)
             {
                 Update();
@@ -96,9 +99,9 @@ namespace SFMLTryout
                 else
                     placing = false;
 
-                if (Mouse.IsButtonPressed(Mouse.Button.Right))
-                    ScreenBuffer[Mouse.GetPosition(window).X / Convert.ToInt32(mult),
-                        Mouse.GetPosition(window).Y / Convert.ToInt32(mult) + 1] = Color.Magenta;
+                //if (Mouse.IsButtonPressed(Mouse.Button.Right))
+                //ScreenBuffer[Mouse.GetPosition(window).X / Convert.ToInt32(mult),
+                //Mouse.GetPosition(window).Y / Convert.ToInt32(mult) + 1] = Color.Magenta;
 
 
 
@@ -107,11 +110,11 @@ namespace SFMLTryout
                 if (Keyboard.IsKeyPressed(Keyboard.Key.F))
                     fire = !fire;
                 if (Keyboard.IsKeyPressed(Keyboard.Key.Num1))
-                    mP = Color.Yellow;
+                    mP = new Pixel(Material.Sand);
                 if (Keyboard.IsKeyPressed(Keyboard.Key.Num2))
-                    mP = Color.Blue;
+                    mP = new Pixel(Material.Water);
                 if (Keyboard.IsKeyPressed(Keyboard.Key.Num3))
-                    mP = Color.Green;
+                    mP = new Pixel(Material.Gas);
                 if (Keyboard.IsKeyPressed(Keyboard.Key.Escape))
                     window.Close();
                 if (Keyboard.IsKeyPressed(Keyboard.Key.F5))
@@ -119,11 +122,11 @@ namespace SFMLTryout
                     {
                         for (int x = 0; x < _Width; x++)
                         {
-                            ScreenBuffer[x, y] = Color.Black;
+                            field[x, y] = new Pixel(Material.Air);
                             fireField[x, y] = 0;
                         }
                     }
-                ScreenBuffer[prevPosX, prevPosY] = Color.Black;
+                field[prevPosX, prevPosY] = new Pixel(Material.Air);
 
 
                 if (Mouse.GetPosition().X / mult < window.Size.X & Mouse.GetPosition().Y / mult < window.Size.Y)
@@ -131,16 +134,16 @@ namespace SFMLTryout
                     {
                         prevPosY = Mouse.GetPosition(window).Y / Convert.ToInt32(mult);
                         prevPosX = Mouse.GetPosition(window).X / Convert.ToInt32(mult);
-                        ScreenBuffer[Mouse.GetPosition(window).X / Convert.ToInt32(mult), Mouse.GetPosition(window).Y / Convert.ToInt32(mult)] = Color.Magenta;
+                        field[Mouse.GetPosition(window).X / Convert.ToInt32(mult), Mouse.GetPosition(window).Y / Convert.ToInt32(mult)] = new Pixel(Material.Generator);
                     }
 
 
 
-                if (mP == Color.Yellow)
+                if (mP == new Pixel(Material.Sand))
                     mPS = "Sand ";
-                if (mP == Color.Blue)
+                if (mP == new Pixel(Material.Water))
                     mPS = "Water";
-                if (mP == Color.Green)
+                if (mP == new Pixel(Material.Gas))
                     mPS = "Gas  ";
 
                 if (Mouse.GetPosition().X / mult < window.Size.X & Mouse.GetPosition().Y / mult < window.Size.Y)
@@ -153,7 +156,9 @@ namespace SFMLTryout
 
         static void Draw()
         {
-
+            for (int y = _Height - 1; y > 0; y--)
+                for (int x = 0; x < _Width; x++)
+                    field[x, y].Update();
         }
 
 
@@ -166,7 +171,7 @@ namespace SFMLTryout
             {
                 for (int y = 0; y < _Height; y++)
                 {
-                    cpixels[x + (_Width * y)] = ScreenBuffer[x, y];//make an intermediary array the correct dimention and arrange the pixels in the correct position to be drawn (separate step to keep everything clean, I find this operation incredibly confusing mainly because I had no idea how the pixels are supposed to be arrenged in the first place(still kind of dont))
+                    cpixels[x + (_Width * y)] = field[x,y].color;//make an intermediary array the correct dimention and arrange the pixels in the correct position to be drawn (separate step to keep everything clean, I find this operation incredibly confusing mainly because I had no idea how the pixels are supposed to be arrenged in the first place(still kind of dont))
                 }
             }
             for (int i = 0; i < _Width * _Height * 4; i += 4)//fill the byte array
