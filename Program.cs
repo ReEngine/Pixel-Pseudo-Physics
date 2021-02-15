@@ -19,7 +19,7 @@ namespace SFMLTryout
         public static uint _SWidth = VideoMode.DesktopMode.Width;
         public static uint _SHeight = VideoMode.DesktopMode.Height;
 
-        const uint _ResMult = 1010b;
+        const uint _ResMult = 10;
 
         public static uint _Width = _SWidth / _ResMult;
         public static uint _Height = _SHeight / _ResMult;
@@ -51,7 +51,8 @@ namespace SFMLTryout
             //        field[x, y].color = Color.Blue;
             //    }
             //}
-            field[10, 10] = new Pixel(Sand);
+            field[_Width/2, 10] = new Pixel(Sand);
+            Vector2i mousePosition;
             while (window.IsOpen)
             {
                 Update();
@@ -62,10 +63,13 @@ namespace SFMLTryout
                 Sprite mainviewport = new Sprite(MainViewPort);
                 window.Draw(mainviewport);
                 window.Display();
+                mousePosition = Mouse.GetPosition(window);
+                field[_Width/2, 10] = new Pixel(Sand);
 
 
 
-                if (true)
+
+                if (window.HasFocus())
                 {
                     Draw();
                     //Drawing function
@@ -75,14 +79,10 @@ namespace SFMLTryout
 
         static void Draw()
         {
-            for (uint y = _Height-1; y > 0; y--)
+            for (uint y = _Height - 1; y > 0; y--)
             {
                 for (uint x = 0; x < _Width; x++)
                 {
-                    if (x == 10 & y == 10)
-                    {
-                        int i = 0;
-                    }
                     field[x, y].Update(x, y);
                 }
             }

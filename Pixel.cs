@@ -28,27 +28,61 @@ namespace SFMLTryout
                 //this.color = Color.Yellow;
                 Random rnd = new Random();
                 byte _RG = Convert.ToByte(rnd.Next(200, 255));
-                this.color = new Color(_RG, _RG, Convert.ToByte(rnd.Next(100,_RG)));
+                this.color = new Color(_RG, _RG, Convert.ToByte(rnd.Next(100, _RG)));
 
             }
         }
         public void Update(uint x, uint y)
         {
+            Random rnd = new Random();
             if (this.Material == Sand)
             {
                 if (y + 1 < Program._Height)
                 {
-                    if (Down(Air,x,y))
+                    if (Down(Air, x, y))
                     {
-                        MoveDown(x,y);
+                        MoveDown(x, y);
                     }
+                    else if (DownLeft(Air, x, y) & DownRight(Air, x, y))
+                    {
+                        if (rnd.Next(0, 2) == 0)
+                        {
+                            MoveDownLeft(x, y);
+                        }
+                        else
+                        {
+                            MoveDownRight(x, y);
+                        }
+                    }
+                    else if (DownLeft(Air, x, y))
+                        MoveDownLeft(x, y);
+                    else if (DownRight(Air, x, y))
+                        MoveDownRight(x, y);
                 }
             }
         }
-        public bool Down(byte material,uint x, uint y)
+        public bool Down(byte material, uint x, uint y)
         {
-            return (Program.field[x, y + 1].Material == material & y < Program._Height);
+            return (Program.field[x, y + 1].Material == material & y + 1 < Program._Height);
         }
+        public bool Left(byte material, uint x, uint y)
+        {
+            return (Program.field[x - 1, y].Material == material & x - 1 > 0);
+        }
+        public bool Right(byte material, uint x, uint y)
+        {
+            return (Program.field[x + 1, y].Material == material & x + 1 < Program._Width);
+        }
+        public bool DownLeft(byte material, uint x, uint y)
+        {
+            return (Program.field[x - 1, y + 1].Material == material & x - 1 > 0 & y + 1 < Program._Height);
+        }
+        public bool DownRight(byte material, uint x, uint y)
+        {
+            return (Program.field[x + 1, y + 1].Material == material & x + 1 < Program._Width & y + 1 < Program._Height);
+        }
+
+
 
         public void MoveDown(uint x, uint y)
         {
@@ -56,5 +90,20 @@ namespace SFMLTryout
             Program.field[x, y + 1] = this;
             Program.field[x, y] = tmp;
         }
+        public void MoveDownLeft(uint x, uint y)
+        {
+            Pixel tmp = Program.field[x - 1, y + 1];
+            Program.field[x - 1, y + 1] = this;
+            Program.field[x, y] = tmp;
+        }
+        public void MoveDownRight(uint x, uint y)
+        {
+            Pixel tmp = Program.field[x + 1, y + 1];
+            Program.field[x + 1, y + 1] = this;
+            Program.field[x, y] = tmp;
+        }
+
+
+
     }
 }
