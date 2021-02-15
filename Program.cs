@@ -12,6 +12,7 @@ namespace SFMLTryout
         const byte Generator = 0;
         const byte Air = 1;
         const byte Sand = 2;
+        const byte Water = 3;
 
 
         public static int TestCounter = 0;
@@ -24,6 +25,8 @@ namespace SFMLTryout
         public static uint _Width = _SWidth / _ResMult;
         public static uint _Height = _SHeight / _ResMult;
 
+        public static uint mouseMult = _SWidth / _Width;
+
         public static Texture MainViewPort = new Texture(_Width, _Height);
 
         public static byte[] pixels = new byte[_Width * _Height * 4];
@@ -31,10 +34,17 @@ namespace SFMLTryout
 
         public static Pixel[,] field = new Pixel[_Width, _Height];
 
+        public static Vector2i prevPos = new Vector2i(0, 0);
+
+        public static bool Placing = false;
+
+        public static byte mP = Sand;
+
+
         static void Main(string[] args)
         {
             RenderWindow window = new RenderWindow(new SFML.Window.VideoMode(_Width, _Height), "Pixels");
-            window.SetVerticalSyncEnabled(true);
+            window.SetVerticalSyncEnabled(false);
 
             for (int y = 0; y < _Height; y++)
             {
@@ -51,7 +61,7 @@ namespace SFMLTryout
             //        field[x, y].color = Color.Blue;
             //    }
             //}
-            field[_Width/2, 10] = new Pixel(Sand);
+            //field[_Width / 2, 10] = new Pixel(Sand);
             Vector2i mousePosition;
             while (window.IsOpen)
             {
@@ -64,10 +74,25 @@ namespace SFMLTryout
                 window.Draw(mainviewport);
                 window.Display();
                 mousePosition = Mouse.GetPosition(window);
-                field[_Width/2, 10] = new Pixel(Sand);
+                int mouseMultInt = Convert.ToInt32(mouseMult);
+
+                Placing = Mouse.IsButtonPressed(Mouse.Button.Left);
+                if (Keyboard.IsKeyPressed(Keyboard.Key.Escape))
+                    window.Close();
+                if (Keyboard.IsKeyPressed(Keyboard.Key.Num1))
+                    mP = Sand;
+                if (Keyboard.IsKeyPressed(Keyboard.Key.Num2))
+                    mP = Water;
 
 
+                field[prevPos.X, prevPos.Y] = new Pixel(Air);
 
+                if (Mouse.GetPosition().X / mouseMult < window.Size.X & Mouse.GetPosition().Y / mouseMult < window.Size.Y)
+                    if (mousePosition.X > 0 & mousePosition.Y > 0)
+                    {
+                        prevPos = new Vector2i(mousePosition.X / mouseMultInt, mousePosition.Y / mouseMultInt);
+                        field[mousePosition.X / mouseMultInt, mousePosition.Y / mouseMultInt] = new Pixel(Generator);
+                    }
 
                 if (window.HasFocus())
                 {
@@ -84,6 +109,7 @@ namespace SFMLTryout
                 for (uint x = 0; x < _Width; x++)
                 {
                     field[x, y].Update(x, y);
+
                 }
             }
         }
@@ -103,7 +129,6 @@ namespace SFMLTryout
             }
             for (int i = 0; i < _Width * _Height * 4; i += 4)
             {
-
                 pixels[i + 0] = cpixels[i / 4].R;
                 pixels[i + 1] = cpixels[i / 4].G;
                 pixels[i + 2] = cpixels[i / 4].B;
