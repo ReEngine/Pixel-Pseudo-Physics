@@ -14,14 +14,12 @@ namespace SFMLTryout
         const byte Sand = 2;
         const byte Water = 3;
 
-
         public static int TestCounter = 0;
 
         public static uint _SWidth = VideoMode.DesktopMode.Width;
         public static uint _SHeight = VideoMode.DesktopMode.Height;
 
         const uint _ResMult = 10;
-
         public static uint _Width = _SWidth / _ResMult;
         public static uint _Height = _SHeight / _ResMult;
 
@@ -39,7 +37,9 @@ namespace SFMLTryout
         public static bool Placing = false;
 
         public static byte mP = Sand;
-
+        public static bool drawDir = true;
+        public static bool voiding = false;
+        public static bool ClearGenerators = false;
 
         static void Main(string[] args)
         {
@@ -77,21 +77,42 @@ namespace SFMLTryout
                 int mouseMultInt = Convert.ToInt32(mouseMult);
 
                 Placing = Mouse.IsButtonPressed(Mouse.Button.Left);
+
+
                 if (Keyboard.IsKeyPressed(Keyboard.Key.Escape))
                     window.Close();
+                if (Keyboard.IsKeyPressed(Keyboard.Key.V))
+                    voiding = !voiding;
                 if (Keyboard.IsKeyPressed(Keyboard.Key.Num1))
                     mP = Sand;
                 if (Keyboard.IsKeyPressed(Keyboard.Key.Num2))
                     mP = Water;
+                if (Keyboard.IsKeyPressed(Keyboard.Key.F5))
+                    for (int y = 0; y < _Height; y++)
+                        for (int x = 0; x < _Width; x++)
+                            if (field[x, y].Material == Generator)
+                                field[x, y] = new Pixel(Air);
 
 
-                field[prevPos.X, prevPos.Y] = new Pixel(Air);
+
+
+
+                if (!Mouse.IsButtonPressed(Mouse.Button.Right))
+                    field[prevPos.X, prevPos.Y] = new Pixel(Air);
 
                 if (Mouse.GetPosition().X / mouseMult < window.Size.X & Mouse.GetPosition().Y / mouseMult < window.Size.Y)
-                    if (mousePosition.X > 0 & mousePosition.Y > 0)
+                    if (mousePosition.X >= 0 & mousePosition.Y >= 0)
                     {
-                        prevPos = new Vector2i(mousePosition.X / mouseMultInt, mousePosition.Y / mouseMultInt);
-                        field[mousePosition.X / mouseMultInt, mousePosition.Y / mouseMultInt] = new Pixel(Generator);
+                        if (!Keyboard.IsKeyPressed(Keyboard.Key.LShift))
+                        {
+                            prevPos = new Vector2i(mousePosition.X / mouseMultInt, mousePosition.Y / mouseMultInt);
+                            field[mousePosition.X / mouseMultInt, mousePosition.Y / mouseMultInt] = new Pixel(Generator);
+                        }
+                        else
+                        {
+                            prevPos = new Vector2i(mousePosition.X / mouseMultInt, 10 / mouseMultInt);
+                            field[mousePosition.X / mouseMultInt, 10 / mouseMultInt] = new Pixel(Generator);
+                        }
                     }
 
                 if (window.HasFocus())
@@ -104,13 +125,31 @@ namespace SFMLTryout
 
         static void Draw()
         {
-            for (uint y = _Height - 1; y > 0; y--)
+            if (drawDir)
             {
-                for (uint x = 0; x < _Width; x++)
+                for (uint y = _Height - 1; y > 0; y--)
                 {
-                    field[x, y].Update(x, y);
+                    for (uint x = 0; x < _Width; x++)
+                    {
+                        if (!field[x, y].UpdatedThisFrame)
+                            field[x, y].Update(x, y);
 
+                    }
                 }
+                drawDir = !drawDir;
+            }
+            else
+            {
+                for (uint y = _Height - 1; y > 0; y--)
+                {
+                    for (uint x = _Width - 1; x > 0; x--)
+                    {
+                        if (!field[x, y].UpdatedThisFrame)
+                            field[x, y].Update(x, y);
+
+                    }
+                }
+                drawDir = !drawDir;
             }
         }
 
@@ -124,15 +163,16 @@ namespace SFMLTryout
             {
                 for (uint y = 0; y < _Height; y++)
                 {
+                    uint i = 4 * (x + (_Width * y));
                     cpixels[x + (_Width * y)] = field[x, y].color;
+                    field[x, y].UpdatedThisFrame = false;
+                    //i *= 4;
+                    pixels[i + 0] = cpixels[i / 4].R;
+                    pixels[i + 1] = cpixels[i / 4].G;
+                    pixels[i + 2] = cpixels[i / 4].B;
+                    pixels[i + 3] = cpixels[i / 4].A;
+
                 }
-            }
-            for (int i = 0; i < _Width * _Height * 4; i += 4)
-            {
-                pixels[i + 0] = cpixels[i / 4].R;
-                pixels[i + 1] = cpixels[i / 4].G;
-                pixels[i + 2] = cpixels[i / 4].B;
-                pixels[i + 3] = cpixels[i / 4].A;
             }
 
             MainViewPort.Update(pixels);
