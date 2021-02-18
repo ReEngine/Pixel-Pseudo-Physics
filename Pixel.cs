@@ -10,25 +10,21 @@ namespace SFMLTryout
     {
         const bool dLeft = true;
         const bool dRight = false;
-
         const byte Generator = 0;
         const byte Air = 1;
         const byte Sand = 2;
         const byte Water = 3;
         public Color color;
         public byte Material;
-
-        //physics stuff
-        public float MaterialFlow;
-        public float Pressure;
-
-
-
-        //
         public bool UpdatedThisFrame = false;
         bool direction;
 
+        //Physics stuff
 
+        double Pressure = 0;
+        float MaterialMaxCompress = 2;
+        //
+        public Vector2i position;
         public Pixel(byte material)
         {
             this.Material = material;
@@ -49,11 +45,12 @@ namespace SFMLTryout
                 Random rnd = new Random();
                 byte _RG = Convert.ToByte(rnd.Next(0, 100));
                 this.color = new Color(_RG, _RG, Convert.ToByte(rnd.Next(115, 255)));
-                this.MaterialFlow = 1;
+                this.Pressure = 1;
             }
         }
         public void Update(uint x, uint y)
         {
+            this.position = new Vector2i(Convert.ToInt32(x), Convert.ToInt32(y));
             Random rnd = new Random();
             if (this.Material == Sand)
             {
@@ -114,121 +111,92 @@ namespace SFMLTryout
             }
             else if (this.Material == Water)
             {
-                if (Up(Water, x, y))
+                Pixel[] neighbors = new Pixel[] { Up(), UpRight(), UpLeft(), Left(), Right(), DownLeft(), DownRight(), Down() };
+                foreach (Pixel neighbor in neighbors)
                 {
-                    byte _RG = Convert.ToByte((this.color.R + Up(x, y).color.R) / 2);
-                    byte _B = Convert.ToByte((this.color.B + Up(x, y).color.B) / 2);
-                    this.color = new Color(_RG, _RG, _B);
-                }
-                if (UpRight(Water, x, y))
-                {
-                    byte _RG = Convert.ToByte((this.color.R + UpRight(x, y).color.R) / 2);
-                    byte _B = Convert.ToByte((this.color.B + UpRight(x, y).color.B) / 2);
-                    this.color = new Color(_RG, _RG, _B);
-                }
-                if (UpLeft(Water, x, y))
-                {
-                    byte _RG = Convert.ToByte((this.color.R + UpLeft(x, y).color.R) / 2);
-                    byte _B = Convert.ToByte((this.color.B + UpLeft(x, y).color.B) / 2);
-                    this.color = new Color(_RG, _RG, _B);
-                }
-                if (Left(Water, x, y))
-                {
-                    byte _RG = Convert.ToByte((this.color.R + Left(x, y).color.R) / 2);
-                    byte _B = Convert.ToByte((this.color.B + Left(x, y).color.B) / 2);
-                    this.color = new Color(_RG, _RG, _B);
-                }
-                if (Right(Water, x, y))
-                {
-                    byte _RG = Convert.ToByte((this.color.R + Right(x, y).color.R) / 2);
-                    byte _B = Convert.ToByte((this.color.B + Right(x, y).color.B) / 2);
-                    this.color = new Color(_RG, _RG, _B);
-                }
-                if (Down(Water, x, y))
-                {
-                    byte _RG = Convert.ToByte((this.color.R + Down(x, y).color.R) / 2);
-                    byte _B = Convert.ToByte((this.color.B + Down(x, y).color.B) / 2);
-                    this.color = new Color(_RG, _RG, _B);
-                }
-                if (DownLeft(Water, x, y))
-                {
-                    byte _RG = Convert.ToByte((this.color.R + DownLeft(x, y).color.R) / 2);
-                    byte _B = Convert.ToByte((this.color.B + DownLeft(x, y).color.B) / 2);
-                    this.color = new Color(_RG, _RG, _B);
-                }
-                if (DownRight(Water, x, y))
-                {
-                    byte _RG = Convert.ToByte((this.color.R + DownRight(x, y).color.R) / 2);
-                    byte _B = Convert.ToByte((this.color.B + DownRight(x, y).color.B) / 2);
-                    this.color = new Color(_RG, _RG, _B);
+                    if (neighbor.Material == Water)
+                    {
+                        byte _B = Convert.ToByte(((255 - Pressure * 50) + neighbor.color.B) / 2);
+                        Byte _RG = Convert.ToByte((neighbor.color.R + color.R) / 2);
+                        this.color = new Color(_RG, _RG, _B);
+                    }
                 }
 
 
                 UpdatedThisFrame = false;
-                //if (y + 1 < Program._Height)
-                //{
-                //    if (Down(Air, x, y) & !UpdatedThisFrame)
-                //    {
-                //        MoveDown(x, y);
-                //    }
+                if (y + 1 < Program._Height)
+                {
+                    if (Down(Air, x, y) & !UpdatedThisFrame)
+                    {
+                        MoveDown(x, y);
+                    }
 
-                //    else if (DownLeft(Air, x, y) & DownRight(Air, x, y) & !UpdatedThisFrame)
-                //    {
-                //        if (rnd.Next(0, 2) == 0)
-                //        {
-                //            MoveDownLeft(x, y);
-                //            direction = dLeft;
-                //        }
-                //        else
-                //        {
-                //            MoveDownRight(x, y);
-                //            direction = dRight;
-                //        }
-                //    }
-                //    else if (DownLeft(Air, x, y) & !UpdatedThisFrame)
-                //    {
-                //        MoveDownLeft(x, y);
-                //        direction = dLeft;
-                //    }
-                //    else if (DownRight(Air, x, y) & !UpdatedThisFrame)
-                //    {
-                //        MoveDownRight(x, y);
-                //        direction = dRight;
-                //    }
-                //    //else if (Left(Air, x, y) & Right(Air, x, y) & !UpdatedThisFrame)
-                //    //{
-                //    //    if (rnd.Next(0, 2) == 0)
-                //    //    {
-                //    //        MoveLeft(x, y);
-                //    //    }
-                //    //    else
-                //    //    {
-                //    //        MoveRight(x, y);
-                //    //    }
-                //    //}
-                //    else if (Left(Air, x, y) & !UpdatedThisFrame & direction == dLeft)
-                //    {
-                //        MoveLeft(x, y);
-                //    }
-                //    else if (Right(Air, x, y) & !UpdatedThisFrame & direction == dRight)
-                //    {
-                //        MoveRight(x, y);
-                //    }
-                //    else if (!Right(Air, x, y))
-                //    {
-                //        direction = !dRight;
-                //    }
-                //    else if (!Left(Air, x, y))
-                //    {
-                //        direction = !dLeft;
-                //    }
-                //}
+                    else if (DownLeft(Air, x, y) & DownRight(Air, x, y) & !UpdatedThisFrame)
+                    {
+                        if (rnd.Next(0, 2) == 0)
+                        {
+                            MoveDownLeft(x, y);
+                            direction = dLeft;
+                        }
+                        else
+                        {
+                            MoveDownRight(x, y);
+                            direction = dRight;
+                        }
+                    }
+                    //else if (DownLeft(Air, x, y) & !UpdatedThisFrame)
+                    //{
+                    //    MoveDownLeft(x, y);
+                    //    direction = dLeft;
+                    //}
+                    //else if (DownRight(Air, x, y) & !UpdatedThisFrame)
+                    //{
+                    //    MoveDownRight(x, y);
+                    //    direction = dRight;
+                    //}
+
+
+
+                    //else if (Left(Air, x, y) & Right(Air, x, y) & !UpdatedThisFrame)
+                    //{
+                    //    if (rnd.Next(0, 2) == 0)
+                    //    {
+                    //        MoveLeft(x, y);
+                    //    }
+                    //    else
+                    //    {
+                    //        MoveRight(x, y);
+                    //    }
+                    //}
+                    else if (Left(Air, x, y) & !UpdatedThisFrame & direction == dLeft)
+                    {
+                        MoveLeft(x, y);
+                    }
+                    else if (Right(Air, x, y) & !UpdatedThisFrame & direction == dRight)
+                    {
+                        MoveRight(x, y);
+                    }
+                    else if (!Right(Air, x, y))
+                    {
+                        direction = !dRight;
+                    }
+                    else if (!Left(Air, x, y))
+                    {
+                        direction = !dLeft;
+                    }
+                }
+                FluidPhysics(neighbors);
+                //this.color.B = Convert.ToByte(255 - NewPressure);
             }
             if (this.Material == Generator)
             {
+                if (Program.DrawCircle)
+                {
+                    DrawCircle(Convert.ToInt32(x), Convert.ToInt32(y), 5);
+                }
                 if (y + 1 < Program._Height & Program.Placing)
                     Program.field[x, y + 1] = new Pixel(Program.mP);
-                if (y != 0 & Program.voiding)
+                if (y - 1 > 0 & Program.voiding)
                 {
                     Program.field[x, y - 1] = new Pixel(Air);
                     if (x != 0)
@@ -237,61 +205,131 @@ namespace SFMLTryout
                         Program.field[x + 1, y - 1] = new Pixel(Air);
                 }
             }
+
             UpdatedThisFrame = true;
         }
+        public static void DrawLine(int x0, int x1, int y0, int y1)
+        {
+            uint deltax = Convert.ToUInt32(Math.Abs(x1 - x0));
+            uint deltay = Convert.ToUInt32(Math.Abs(y1 - y0));
+            double error = 0;
+            float deltaerr = (deltay + 1) / (deltax + 1);
+            int y = y0;
+            int diry = y1 - y0;
+            if (diry > 0)
+                diry = 1;
+            if (diry < 0)
+                diry = -1;
+            for (int x = x0; x < x1; x++)
+            {
+                if (x < Program._Width & y < Program._Height)
+                    Program.field[x, y] = new Pixel(Program.mP);
+                error += deltaerr;
+                if (error >= 1.0)
+                    y = y + diry;
+                error -= 1.0;
+            }
 
-        public Pixel Up(uint x, uint y)
+
+        }
+        public static void DrawCircle(int X0, int Y0, int R)
         {
-            if (y - 1 >= 0)
-                return (Program.field[x, y - 1]);
+
+            int f = 1 - R;
+            int ddF_x = 1;
+            int ddF_y = -2 * R;
+            int x = 0;
+            int y = R;
+
+            DrawLine(X0 - R, Y0, X0 + R, Y0);
+            DrawLine(X0, Y0 - R, X0, Y0 + R);
+
+            while (x < y)
+            {
+                if (f >= 0)
+                {
+                    y--;
+                    ddF_y += 2;
+                    f += ddF_y;
+                }
+                x++;
+                ddF_x += 2;
+                f += ddF_x;
+
+                DrawLine(X0 + x, Y0 + y, X0 - x, Y0 + y);
+                DrawLine(X0 + x, Y0 - y, X0 - x, Y0 - y);
+                DrawLine(X0 + y, Y0 + x, X0 - y, Y0 + x);
+                DrawLine(X0 + y, Y0 - x, X0 - y, Y0 - x);
+
+            }
+        }
+        void FluidPhysics(Pixel[] neighbors)
+        {
+            foreach (Pixel neighbor in neighbors)
+            {
+                if (Up() == neighbor)
+                {
+                    //if (Pressure < MaterialMaxCompress)
+                    this.Pressure = neighbor.Pressure + 0.05;
+
+                    Pressure = Math.Clamp(Pressure, 1, MaterialMaxCompress);
+                }
+            }
+        }
+
+
+        public Pixel Up()
+        {
+            if (position.Y - 1 > 0)
+                return (Program.field[position.X, position.Y - 1]);
             else return new Pixel(Air);
         }
-        public Pixel Down(uint x, uint y)
+        public Pixel Down()
         {
-            if (y + 1 < Program._Height)
-                return (Program.field[x, y + 1]);
+            if (position.Y + 1 < Program._Height)
+                return (Program.field[position.X, position.Y + 1]);
             else return new Pixel(Air);
         }
-        public Pixel Left(uint x, uint y)
+        public Pixel Left()
         {
-            if (x - 1 >= 0)
-                return (Program.field[x - 1, y]);
+            if (position.X != 0)
+                return (Program.field[position.X - 1, position.Y]);
             else return new Pixel(Air);
         }
-        public Pixel Right(uint x, uint y)
+        public Pixel Right()
         {
-            if (x + 1 < Program._Width)
-                return (Program.field[x + 1, y]);
+            if (position.X + 1 < Program._Width)
+                return (Program.field[position.X + 1, position.Y]);
             else return new Pixel(Air);
         }
-        public Pixel UpLeft(uint x, uint y)
+        public Pixel UpLeft()
         {
-            if (x - 1 >= 0 & y - 1 >= 0)
-                return (Program.field[x - 1, y - 1]);
+            if (position.X != 0 & position.Y - 1 > 0)
+                return (Program.field[position.X - 1, position.Y - 1]);
             else return new Pixel(Air);
         }
-        public Pixel UpRight(uint x, uint y)
+        public Pixel UpRight()
         {
-            if (x + 1 < Program._Width & y - 1 >= 0)
-                return (Program.field[x + 1, y - 1]);
+            if (position.X + 1 < Program._Width & position.Y - 1 > 0)
+                return (Program.field[position.X + 1, position.Y - 1]);
             else return new Pixel(Air);
         }
-        public Pixel DownLeft(uint x, uint y)
+        public Pixel DownLeft()
         {
-            if (x - 1 >= 0 & y + 1 < Program._Height)
-                return (Program.field[x - 1, y + 1]);
+            if (position.X != 0 & position.Y + 1 < Program._Height)
+                return (Program.field[position.X - 1, position.Y + 1]);
             else return new Pixel(Air);
         }
-        public Pixel DownRight(uint x, uint y)
+        public Pixel DownRight()
         {
-            if (x + 1 < Program._Width & y + 1 < Program._Height)
-                return (Program.field[x + 1, y + 1]);
+            if (position.X + 1 < Program._Width & position.Y + 1 < Program._Height)
+                return (Program.field[position.X + 1, position.Y + 1]);
             else return new Pixel(Air);
         }
 
         public bool Up(byte material, uint x, uint y)
         {
-            return (Program.field[x, y - 1].Material == material & y - 1 >= 0);
+            return (Program.field[x, y - 1].Material == material & y - 1 > 0);
         }
         public bool Down(byte material, uint x, uint y)
         {
@@ -327,21 +365,16 @@ namespace SFMLTryout
         }
         public bool UpLeft(byte material, uint x, uint y)
         {
-            if (x != 0 & y - 1 >= 0)
-            {
-                return (Program.field[x - 1, y - 1].Material == material);
-            }
-            else return false;
+            return (Program.field[x - 1, y - 1].Material == material & x != 0 & y - 1 > 0);
         }
         public bool UpRight(byte material, uint x, uint y)
         {
-            if (x + 1 < Program._Width & y - 1 >= 0)
+            if (x + 1 < Program._Width & y - 1 > 0)
             {
                 return Program.field[x + 1, y - 1].Material == material;
             }
             else return false;
         }
-
 
 
         public void MoveDown(uint x, uint y)

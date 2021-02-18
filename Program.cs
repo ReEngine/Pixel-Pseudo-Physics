@@ -35,12 +35,12 @@ namespace SFMLTryout
         public static Vector2i prevPos = new Vector2i(0, 0);
 
         public static bool Placing = false;
-
+        public static bool DrawCircle = false;
         public static byte mP = Sand;
         public static bool drawDir = true;
         public static bool voiding = false;
         public static bool ClearGenerators = false;
-
+        public static ulong CurrentTick = 0;
         static void Main(string[] args)
         {
             RenderWindow window = new RenderWindow(new SFML.Window.VideoMode(_Width, _Height), "Pixels");
@@ -63,6 +63,7 @@ namespace SFMLTryout
             //}
             //field[_Width / 2, 10] = new Pixel(Sand);
             Vector2i mousePosition;
+            Pixel.DrawCircle(150, 50, 5);
             while (window.IsOpen)
             {
                 Update();
@@ -92,6 +93,8 @@ namespace SFMLTryout
                         for (int x = 0; x < _Width; x++)
                             if (field[x, y].Material == Generator)
                                 field[x, y] = new Pixel(Air);
+                DrawCircle = Mouse.IsButtonPressed(Mouse.Button.Middle);
+
 
 
 
@@ -120,6 +123,7 @@ namespace SFMLTryout
                     Draw();
                     //Drawing function
                 }
+                CurrentTick++;
             }
         }
 
