@@ -14,11 +14,13 @@ namespace SFMLTryout
         const byte Air = 1;
         const byte Sand = 2;
         const byte Water = 3;
+        const byte Blood = 4;
         public Color color;
         public byte Material;
         public bool UpdatedThisFrame = false;
         bool direction;
-
+        byte moisture = 0;
+        Color OriginColor;
         //Physics stuff
 
         double Pressure = 0;
@@ -38,6 +40,7 @@ namespace SFMLTryout
                 Random rnd = new Random();
                 byte _RG = Convert.ToByte(rnd.Next(200, 255));
                 this.color = new Color(_RG, _RG, Convert.ToByte(rnd.Next(100, _RG)));
+                this.OriginColor = color;
 
             }
             if (Material == Water)
@@ -46,14 +49,36 @@ namespace SFMLTryout
                 byte _RG = Convert.ToByte(rnd.Next(0, 100));
                 this.color = new Color(_RG, _RG, Convert.ToByte(rnd.Next(115, 255)));
                 this.Pressure = 1;
+                this.OriginColor = color;
+            }
+            if (Material == Blood)
+            {
+                this.color = new Color(138, 3, 3);
+                //this.Material = Water;
             }
         }
         public void Update(uint x, uint y)
         {
             this.position = new Vector2i(Convert.ToInt32(x), Convert.ToInt32(y));
             Random rnd = new Random();
+            Pixel[] neighbors = new Pixel[] { Up(), UpRight(), UpLeft(), Left(), Right(), DownLeft(), DownRight(), Down() };
             if (this.Material == Sand)
             {
+                byte max = 0;
+                moisture = 0;
+                foreach (Pixel neighbor in neighbors)
+                {
+                    if (neighbor.Material == Water)
+                        moisture = max = 10;
+
+                    if (neighbor.Material == Sand)
+                    {
+                        if (neighbor.moisture - 1 > max)
+                            moisture = Convert.ToByte(neighbor.moisture - 1);
+                    }
+                }
+
+                this.color.A = Convert.ToByte(255 - moisture * 5);
                 if (y + 1 < Program._Height)
                 {
                     if ((Down(Air, x, y) | (Down(Water, x, y))) & !UpdatedThisFrame)
@@ -111,7 +136,6 @@ namespace SFMLTryout
             }
             else if (this.Material == Water)
             {
-                Pixel[] neighbors = new Pixel[] { Up(), UpRight(), UpLeft(), Left(), Right(), DownLeft(), DownRight(), Down() };
                 foreach (Pixel neighbor in neighbors)
                 {
                     if (neighbor.Material == Water)
@@ -119,6 +143,11 @@ namespace SFMLTryout
                         byte _B = Convert.ToByte(((255 - Pressure * 50) + neighbor.color.B) / 2);
                         Byte _RG = Convert.ToByte((neighbor.color.R + color.R) / 2);
                         this.color = new Color(_RG, _RG, _B);
+                        this.color = new Color(_RG, _RG, _B);
+                        //if (Up(Air, x, y))
+                        //{
+                        //    this.color = Color.White;
+                        //}
                     }
                 }
 
@@ -133,7 +162,9 @@ namespace SFMLTryout
 
                     else if (DownLeft(Air, x, y) & DownRight(Air, x, y) & !UpdatedThisFrame)
                     {
-                        if (rnd.Next(0, 2) == 0)
+                        var rndVal = rnd.Next(0, 2);
+                        //Console.WriteLine(rndVal);
+                        if (rndVal == 0)
                         {
                             MoveDownLeft(x, y);
                             direction = dLeft;
@@ -168,13 +199,13 @@ namespace SFMLTryout
                     //        MoveRight(x, y);
                     //    }
                     //}
-                    else if (Left(Air, x, y) & !UpdatedThisFrame & direction == dLeft)
-                    {
-                        MoveLeft(x, y);
-                    }
                     else if (Right(Air, x, y) & !UpdatedThisFrame & direction == dRight)
                     {
                         MoveRight(x, y);
+                    }
+                    else if (Left(Air, x, y) & !UpdatedThisFrame & direction == dLeft)
+                    {
+                        MoveLeft(x, y);
                     }
                     else if (!Right(Air, x, y))
                     {

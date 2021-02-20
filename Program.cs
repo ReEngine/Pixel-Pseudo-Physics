@@ -13,15 +13,16 @@ namespace SFMLTryout
         const byte Air = 1;
         const byte Sand = 2;
         const byte Water = 3;
+        const byte Blood = 4;
 
         public static int TestCounter = 0;
 
         public static uint _SWidth = VideoMode.DesktopMode.Width;
         public static uint _SHeight = VideoMode.DesktopMode.Height;
 
-        const uint _ResMult = 10;
-        public static uint _Width = _SWidth / _ResMult;
-        public static uint _Height = _SHeight / _ResMult;
+        const uint _ResMult = 15;
+        public static uint _Width = 160;//_SWidth / _ResMult;
+        public static uint _Height = 90;//_SHeight / _ResMult;
 
         public static uint mouseMult = _SWidth / _Width;
 
@@ -31,6 +32,7 @@ namespace SFMLTryout
         public static Color[] cpixels = new Color[_Width * _Height];
 
         public static Pixel[,] field = new Pixel[_Width, _Height];
+        public static Pixel[,] resField = new Pixel[_Width, _Height];
 
         public static Vector2i prevPos = new Vector2i(0, 0);
 
@@ -88,6 +90,8 @@ namespace SFMLTryout
                     mP = Sand;
                 if (Keyboard.IsKeyPressed(Keyboard.Key.Num2))
                     mP = Water;
+                if (Keyboard.IsKeyPressed(Keyboard.Key.Num3))
+                    mP = Blood;
                 if (Keyboard.IsKeyPressed(Keyboard.Key.F5))
                     for (int y = 0; y < _Height; y++)
                         for (int x = 0; x < _Width; x++)
@@ -167,6 +171,7 @@ namespace SFMLTryout
             {
                 for (uint y = 0; y < _Height; y++)
                 {
+
                     uint i = 4 * (x + (_Width * y));
                     cpixels[x + (_Width * y)] = field[x, y].color;
                     field[x, y].UpdatedThisFrame = false;
