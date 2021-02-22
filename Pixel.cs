@@ -3,6 +3,7 @@ using SFML.Audio;
 using SFML.Graphics;
 using SFML.System;
 using SFML.Window;
+using SimplexNoise;
 
 namespace SFMLTryout
 {
@@ -14,7 +15,7 @@ namespace SFMLTryout
         const byte Air = 1;
         const byte Sand = 2;
         const byte Water = 3;
-        const byte Blood = 4;
+        const byte Dirt = 4;
         public Color color;
         public byte Material;
         public bool UpdatedThisFrame = false;
@@ -22,7 +23,6 @@ namespace SFMLTryout
         byte moisture = 0;
         Color OriginColor;
         //Physics stuff
-
         double Pressure = 0;
         float MaterialMaxCompress = 2;
         //
@@ -33,7 +33,7 @@ namespace SFMLTryout
             if (material == Generator)
                 this.color = Color.Magenta;
             if (material == Air)
-                this.color = Color.Black;
+                this.color = new Color(Convert.ToByte(Math.Clamp(Program._uy,0,Program._Height)), Convert.ToByte(Math.Clamp(Program._uy, Program._Height/2, Program._Height)), 255);
             if (material == Sand)
             {
                 //this.color = Color.Yellow;
@@ -51,10 +51,33 @@ namespace SFMLTryout
                 this.Pressure = 1;
                 this.OriginColor = color;
             }
-            if (Material == Blood)
+            if (Material == Dirt)
             {
-                this.color = new Color(138, 3, 3);
-                //this.Material = Water;
+                uint x = Program._ux;
+                uint y = Program._uy;
+                int xInt = Convert.ToInt32(x+Program.xOffset);
+                int yInt = Convert.ToInt32(y-Program.yOffset);
+                byte _RGB = Convert.ToByte(Math.Abs(128 - Noise.CalcPixel2D(xInt, yInt, 0.2f)));
+                if (Convert.ToByte(Math.Abs(128 - Noise.CalcPixel2D(xInt, yInt, 0.1f))) > 100)
+                    _RGB += Convert.ToByte(Math.Abs(128 - Noise.CalcPixel2D(xInt, yInt, 0.1f)));
+
+                byte _R = Convert.ToByte((_RGB + 60) / 2);
+                byte _G = Convert.ToByte((_RGB + 35) / 2);
+                byte _B = Convert.ToByte((_RGB + 3) / 2);
+                color = new Color(_R, _G, _B);
+                if (Up(Air, x, y))
+                {
+                    _RGB = Convert.ToByte(Math.Abs(128 - Noise.CalcPixel2D(xInt, yInt, 0.2f)));
+                    this.color = new Color(0, _RGB, 0);
+                }
+                if (Up(Water, x, y))
+                {
+                    Program.field[x, y] = new Pixel(Sand);
+                }
+                if (Up().Up(Water, x, y))
+                {
+                    Program.field[x, y] = new Pixel(Sand);
+                }
             }
         }
         public void Update(uint x, uint y)
@@ -62,6 +85,7 @@ namespace SFMLTryout
             this.position = new Vector2i(Convert.ToInt32(x), Convert.ToInt32(y));
             Random rnd = new Random();
             Pixel[] neighbors = new Pixel[] { Up(), UpRight(), UpLeft(), Left(), Right(), DownLeft(), DownRight(), Down() };
+
             if (this.Material == Sand)
             {
                 byte max = 0;
@@ -141,9 +165,15 @@ namespace SFMLTryout
                     if (neighbor.Material == Water)
                     {
                         byte _B = Convert.ToByte(((255 - Pressure * 50) + neighbor.color.B) / 2);
-                        Byte _RG = Convert.ToByte((neighbor.color.R + color.R) / 2);
+                        byte _RG = Convert.ToByte((neighbor.color.R + color.R) / 2);
                         this.color = new Color(_RG, _RG, _B);
+                        _RG = Convert.ToByte((255 - Math.Abs(Noise.CalcPixel3D(Convert.ToInt32(x), Convert.ToInt32(y), Convert.ToInt32(Program.CurrentTick), 0.05f) - 128) - Pressure * 50 + _RG) / 10);
+                        if (color.B != OriginColor.B)
+                            _B = Convert.ToByte(color.B - ((color.B - OriginColor.B) / (Math.Abs(color.B - OriginColor.B))));
+
+
                         this.color = new Color(_RG, _RG, _B);
+                        //OriginColor = new Color(Convert.ToByte(rnd.Next(200, 255)), Convert.ToByte(rnd.Next(200, 255)), Convert.ToByte(rnd.Next(115, 255)));
                         //if (Up(Air, x, y))
                         //{
                         //    this.color = Color.White;
@@ -175,30 +205,6 @@ namespace SFMLTryout
                             direction = dRight;
                         }
                     }
-                    //else if (DownLeft(Air, x, y) & !UpdatedThisFrame)
-                    //{
-                    //    MoveDownLeft(x, y);
-                    //    direction = dLeft;
-                    //}
-                    //else if (DownRight(Air, x, y) & !UpdatedThisFrame)
-                    //{
-                    //    MoveDownRight(x, y);
-                    //    direction = dRight;
-                    //}
-
-
-
-                    //else if (Left(Air, x, y) & Right(Air, x, y) & !UpdatedThisFrame)
-                    //{
-                    //    if (rnd.Next(0, 2) == 0)
-                    //    {
-                    //        MoveLeft(x, y);
-                    //    }
-                    //    else
-                    //    {
-                    //        MoveRight(x, y);
-                    //    }
-                    //}
                     else if (Right(Air, x, y) & !UpdatedThisFrame & direction == dRight)
                     {
                         MoveRight(x, y);
@@ -219,14 +225,15 @@ namespace SFMLTryout
                 FluidPhysics(neighbors);
                 //this.color.B = Convert.ToByte(255 - NewPressure);
             }
+            else if (this.Material == Dirt)
+            {
+
+            }
             if (this.Material == Generator)
             {
-                if (Program.DrawCircle)
-                {
-                    DrawCircle(Convert.ToInt32(x), Convert.ToInt32(y), 5);
-                }
                 if (y + 1 < Program._Height & Program.Placing)
                     Program.field[x, y + 1] = new Pixel(Program.mP);
+
                 if (y - 1 > 0 & Program.voiding)
                 {
                     Program.field[x, y - 1] = new Pixel(Air);
@@ -263,37 +270,7 @@ namespace SFMLTryout
 
 
         }
-        public static void DrawCircle(int X0, int Y0, int R)
-        {
 
-            int f = 1 - R;
-            int ddF_x = 1;
-            int ddF_y = -2 * R;
-            int x = 0;
-            int y = R;
-
-            DrawLine(X0 - R, Y0, X0 + R, Y0);
-            DrawLine(X0, Y0 - R, X0, Y0 + R);
-
-            while (x < y)
-            {
-                if (f >= 0)
-                {
-                    y--;
-                    ddF_y += 2;
-                    f += ddF_y;
-                }
-                x++;
-                ddF_x += 2;
-                f += ddF_x;
-
-                DrawLine(X0 + x, Y0 + y, X0 - x, Y0 + y);
-                DrawLine(X0 + x, Y0 - y, X0 - x, Y0 - y);
-                DrawLine(X0 + y, Y0 + x, X0 - y, Y0 + x);
-                DrawLine(X0 + y, Y0 - x, X0 - y, Y0 - x);
-
-            }
-        }
         void FluidPhysics(Pixel[] neighbors)
         {
             foreach (Pixel neighbor in neighbors)
@@ -360,7 +337,11 @@ namespace SFMLTryout
 
         public bool Up(byte material, uint x, uint y)
         {
-            return (Program.field[x, y - 1].Material == material & y - 1 > 0);
+            if (y != 0)
+            {
+                return (Program.field[x, y - 1].Material == material);
+            }
+            else return false;
         }
         public bool Down(byte material, uint x, uint y)
         {
